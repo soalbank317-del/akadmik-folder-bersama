@@ -42,6 +42,10 @@ body {
     color: #1a0dab;
     text-decoration: none;
 }
+.result-link {
+    font-size: 14px;
+    color: #006621;
+}
 .result-desc {
     font-size: 14px;
     color: #545454;
@@ -105,6 +109,7 @@ function search() {
         div.className = 'result-item';
         const highlightedName = c.name.replace(regex, '<span class="highlight">$1</span>');
         div.innerHTML = `<a href="${c.link}" target="_blank">${highlightedName}</a><br>
+                         <span class="result-link">${c.link}</span><br>
                          <span class="result-desc">${c.desc}</span>`;
         container.appendChild(div);
     });
