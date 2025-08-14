@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pencarian Kelas</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background-color: #fff;
+        color: #202124;
+    }
+    .logo-container {
+        text-align: center;
+        margin-top: 150px;
+    }
+    .logo-container img {
+        width: 272px;
+        height: 92px;
+    }
+    .search-box {
+        display: block;
+        margin: 20px auto;
+        width: 50%;
+        max-width: 600px;
+        padding: 12px 20px;
+        font-size: 16px;
+        border: 1px solid #dcdcdc;
+        border-radius: 24px;
+        outline: none;
+    }
+    .results-container {
+        max-width: 800px;
+        margin: 20px auto;
+    }
+    .result-item {
+        margin-bottom: 20px;
+    }
+    .result-item a {
+        font-size: 18px;
+        color: #1a0dab;
+        text-decoration: none;
+    }
+    .result-link {
+        font-size: 14px;
+        color: #006621;
+    }
+    .result-desc {
+        font-size: 14px;
+        color: #545454;
+    }
+</style>
+</head>
+<body>
+
+<!-- Halaman Awal -->
+<div id="homePage" class="logo-container">
+    <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" alt="Google Logo">
+    <input type="text" id="searchBox" class="search-box" placeholder="Cari kelas..." onkeydown="checkEnter(event)">
+</div>
+
+<!-- Halaman Hasil -->
+<div id="resultsPage" style="display:none;">
+    <input type="text" id="searchBoxResults" class="search-box" onkeydown="checkEnterResults(event)">
+    <div class="results-container" id="results"></div>
+</div>
+
+<script>
+// Ganti dengan link CSV publik spreadsheet-mu setelah publish to web
+const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSTVuikIS8TrWotcD8HoURvr8THTt7wM5E3aoxbxHgL_Al6uILAbEK7rXiBfLdckO96gZVWuRGIUrY_/pub?gid=0&single=true&output=tsv';
+let classes = [];
+
+// Ambil data CSV
+fetch(csvUrl)
+.then(response => response.text())
+.then(text => {
+    const rows = text.split('\n').slice(1); // skip header
+    classes = rows.map(row => {
+        const cols = row.split(',');
+        return { name: cols[0], link: cols[1], desc: `Klik untuk membuka kelas ${cols[0]}` };
+    });
+});
+
+function checkEnter(e) {
+    if (e.key === 'Enter') showResults(document.getElementById('searchBox').value);
+}
+
+function checkEnterResults(e) {
+    if (e.key === 'Enter') showResults(document.getElementById('searchBoxResults').value);
+}
+
+function showResults(query) {
+    document.getElementById('homePage').style.display = 'none';
+    document.getElementById('resultsPage').style.display = 'block';
+    document.getElementById('searchBoxResults').value = query;
+
+    const results = classes.filter(c => c.name.toLowerCase().includes(query.toLowerCase()));
+    const container = document.getElementById('results');
+    container.innerHTML = '';
+
+    results.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'result-item';
+        div.innerHTML = `<a href="${c.link}" target="_blank">${c.name}</a><br>
+                         <span class="result-link">${c.link}</span><br>
+                         <span class="result-desc">${c.desc}</span>`;
+        container.appendChild(div);
+    });
+}
+</script>
+
+</body>
+</html>
