@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pencarian Kelas</title>
+<title>Pencarian File</title>
 <style>
     body { font-family: Arial, sans-serif; background-color: #fff; color: #202124; margin: 0; }
     .logo-container { text-align: center; margin-top: 150px; }
@@ -24,7 +24,7 @@
 <!-- Halaman Awal -->
 <div id="homePage" class="logo-container">
     <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" alt="Google Logo">
-    <input type="text" id="searchBox" class="search-box" placeholder="Cari kelas..." onkeydown="checkEnter(event)">
+    <input type="text" id="searchBox" class="search-box" placeholder="Cari file..." onkeydown="checkEnter(event)">
 </div>
 
 <!-- Halaman Hasil -->
@@ -39,6 +39,7 @@ let classes = [];
 let currentPage = 1;
 const itemsPerPage = 10;
 
+// Ambil data dari Apps Script
 google.script.run.withSuccessHandler(data => {
     classes = data;
 }).getData();
@@ -96,4 +97,3 @@ function renderPagination(totalItems, query) {
 
 </body>
 </html>
-
