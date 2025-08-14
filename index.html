@@ -1,92 +1,39 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pencarian Kelas</title>
-<style>
-body {
-    font-family: Arial;
-    margin: 0;
-    background-color: #fff;
-    color: #202124;
-}
-.logo-container {
-    text-align: center;
-    margin-top: 150px;
-}
-.logo-container img {
-    width: 272px;
-    height: 92px;
-}
-.search-box {
-    display: block;
-    margin: 20px auto;
-    width: 50%;
-    max-width: 600px;
-    padding: 12px 20px;
-    font-size: 16px;
-    border: 1px solid #dcdcdc;
-    border-radius: 24px;
-    outline: none;
-}
-.results-container {
-    max-width: 800px;
-    margin: 20px auto;
-}
-.result-item {
-    margin-bottom: 20px;
-}
-.result-item a {
-    font-size: 18px;
-    color: #1a0dab;
-    text-decoration: none;
-}
-.result-desc {
-    font-size: 14px;
-    color: #545454;
-}
-.highlight {
-    background-color: yellow;
-}
-</style>
-</head>
-<body>
-
-<!-- Halaman Awal -->
-<div id="homePage" class="logo-container">
-    <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" alt="Google Logo">
-    <div style="font-size:18px; color:#555; margin-top:10px;">Rekap per dua minggu</div>
-    <input type="text" id="searchBox" class="search-box" placeholder="Cari kelas..." oninput="search()">
-</div>
-
-<!-- Halaman Hasil -->
-<div id="resultsPage" style="display:none;">
-    <input type="text" id="searchBoxResults" class="search-box" oninput="search()">
-    <div class="results-container" id="results"></div>
-</div>
-
 <script>
 let classes = [];
 
 // Ambil data dari Apps Script server
 function loadData() {
-  google.script.run.withSuccessHandler(function(data){
-    classes = data;
-    search(); // update hasil pencarian otomatis
-  }).getClasses();
+  if (typeof google !== "undefined" && google.script && google.script.run) {
+    google.script.run.withSuccessHandler(function(data){
+      classes = Array.isArray(data) ? data : [];
+      search(); // update hasil pencarian otomatis
+    }).getClasses();
+  } else {
+    console.warn("google.script.run tidak tersedia. Pastikan dijalankan dari Web App GAS.");
+  }
 }
 
 // Load data pertama kali dan refresh setiap 30 detik
 loadData();
 setInterval(loadData, 30000);
 
+// Fungsi untuk escape karakter khusus agar aman di RegExp
+function escapeRegExp(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 // Fungsi search dengan highlight
 function search() {
     const homePage = document.getElementById('homePage');
     const resultsPage = document.getElementById('resultsPage');
-    const query = document.getElementById(homePage.style.display === 'none' ? 'searchBoxResults' : 'searchBox').value.trim();
     
+    const activeSearchBox = homePage.style.display === 'none' 
+        ? document.getElementById('searchBoxResults') 
+        : document.getElementById('searchBox');
+    
+    const query = activeSearchBox.value.trim();
+
+    // Tampilkan halaman yang sesuai
     if(query.length > 0) {
         homePage.style.display = 'none';
         resultsPage.style.display = 'block';
@@ -95,21 +42,27 @@ function search() {
         resultsPage.style.display = 'none';
     }
 
-    const results = classes.filter(c => c.name.toLowerCase().includes(query.toLowerCase()));
+    // Filter hasil
+    const lowerQuery = query.toLowerCase();
+    const results = classes.filter(c => 
+        c.name && c.name.toLowerCase().includes(lowerQuery)
+    );
+
     const container = document.getElementById('results');
     container.innerHTML = '';
 
-    const regex = new RegExp(`(${query})`, 'gi');
-    results.forEach(c => {
-        const div = document.createElement('div');
-        div.className = 'result-item';
-        const highlightedName = c.name.replace(regex, '<span class="highlight">$1</span>');
-        div.innerHTML = `<a href="${c.link}" target="_blank">${highlightedName}</a><br>
-                         <span class="result-desc">${c.desc}</span>`;
-        container.appendChild(div);
-    });
+    if (query.length > 0 && results.length > 0) {
+        const safeRegex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+        results.forEach(c => {
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            const highlightedName = c.name.replace(safeRegex, '<span class="highlight">$1</span>');
+            div.innerHTML = `
+                <a href="${c.link}" target="_blank">${highlightedName}</a><br>
+                <span class="result-desc">${c.desc || ''}</span>
+            `;
+            container.appendChild(div);
+        });
+    }
 }
 </script>
-
-</body>
-</html>
