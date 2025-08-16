@@ -1,117 +1,297 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pencarian Data</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin:0; padding:0; }
-    .center { text-align: center; margin-top: 15%; }
-    .search-box { width: 400px; padding: 10px; font-size: 16px; }
-    .btn { padding: 8px 16px; margin: 10px; font-size: 14px; cursor:pointer; }
-    .results { max-width: 700px; margin: 20px auto; }
-    .result-item { margin-bottom: 20px; }
-    .result-item a { font-size: 18px; color:#1a0dab; text-decoration:none; }
-    .result-item a:hover { text-decoration:underline; }
-    .result-link { font-size:14px; color:#006621; }
-    .result-desc { font-size:14px; color:#545454; }
-    .pagination { text-align:center; margin:20px 0; }
-    .pagination button { margin:0 5px; padding:5px 10px; cursor:pointer; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TIM-AKADEMIK Search</title>
+<style>
+  :root{
+    --blue:#1a73e8; --red:#ea4335; --yellow:#fbbc05; --green:#34a853;
+    --text:#202124; --muted:#5f6368; --border:#dadce0; --link:#1a0dab; --url:#006621;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; font-family:Arial,Helvetica,sans-serif; color:var(--text); background:#fff;}
+
+  /* ===== HOME (google.com style) ===== */
+  #homePage{min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+  .logo-text{
+    font-size:84px; font-weight:bold; letter-spacing:-2px; user-select:none; line-height:1;
+  }
+  .logo-text .b{color:var(--blue)} .logo-text .r{color:var(--red)}
+  .logo-text .y{color:var(--yellow)} .logo-text .g{color:var(--green)}
+  .home-search-wrap{margin-top:28px; width:90%; max-width:584px;}
+  .searchbar{
+    display:flex; align-items:center; gap:10px; padding:10px 14px;
+    border:1px solid #dfe1e5; border-radius:24px; background:#fff;
+    box-shadow:0 1px 6px rgba(32,33,36,.28);
+  }
+  .searchbar:focus-within{box-shadow:0 1px 8px rgba(26,115,232,.35); border-color:#dfe1e5;}
+  .searchbar input{
+    flex:1; border:none; outline:none; font-size:16px; padding:6px 4px; background:transparent;
+  }
+  .icon{width:20px; height:20px; opacity:.6}
+  .home-buttons{margin-top:28px; display:flex; gap:8px; justify-content:center}
+  .home-buttons button{
+    padding:8px 14px; border:1px solid transparent; background:#f8f9fa; border-radius:4px; cursor:pointer;
+    color:#3c4043; font-size:14px;
+  }
+  .home-buttons button:hover{border-color:#dadce0; box-shadow:0 1px 1px rgba(0,0,0,.1)}
+
+  /* ===== RESULTS (google.com/search style) ===== */
+  #resultsPage{display:none;}
+  .hdr{display:flex; align-items:center; gap:16px; padding:12px 16px; border-bottom:1px solid #e0e0e0;}
+  .hdr .logo-small{font-weight:bold; font-size:28px; letter-spacing:-1px; user-select:none}
+  .hdr .logo-small .b{color:var(--blue)} .hdr .logo-small .r{color:var(--red)}
+  .hdr .logo-small .y{color:var(--yellow)} .hdr .logo-small .g{color:var(--green)}
+  .hdr .bar{flex:1}
+  .hdr .bar .searchbar{box-shadow:none; border:1px solid #dfe1e5}
+  .tabs{display:flex; gap:18px; padding:10px 160px; border-bottom:1px solid #e0e0e0; color:var(--muted); font-size:14px}
+  .tabs div{padding-bottom:8px; border-bottom:2px solid transparent; cursor:pointer}
+  .tabs .active{color:var(--blue); border-color:var(--blue); font-weight:600}
+
+  .res-wrap{max-width:652px; margin:24px 160px}
+  .res-item{margin-bottom:28px}
+  .res-title{font-size:20px; line-height:1.3}
+  .res-title a{color:var(--link); text-decoration:none}
+  .res-title a:hover{text-decoration:underline}
+  .res-url{font-size:14px; color:var(--url); margin:3px 0}
+  .res-desc{font-size:14px; color:#4d5156}
+  .empty{color:var(--muted); font-size:14px; margin-top:12px}
+
+  /* Pagination ala “Goooooooooogle” */
+  .paging{display:flex; flex-direction:column; align-items:center; gap:6px; margin:40px 0}
+  .goo{
+    font-size:32px; user-select:none; letter-spacing:1px; display:flex; align-items:center; gap:2px
+  }
+  .goo .G{color:var(--blue); font-weight:bold}
+  .goo .o{color:var(--red)}
+  .goo .oo{color:var(--yellow)}
+  .goo .g{color:var(--blue); font-weight:bold}
+  .goo .l{color:var(--green); font-weight:bold}
+  .goo .e{color:var(--red); font-weight:bold}
+  .page-links a{color:var(--link); text-decoration:none; padding:6px 8px; margin:0 2px}
+  .page-links a.active{font-weight:bold; color:#000; background:#f1f3f4; border-radius:6px}
+
+  mark.hi{background:#fff3b0; color:#2b2b00; padding:0 .1em; border-radius:2px}
+
+  @media(max-width:1024px){
+    .tabs{padding:10px 20px}
+    .res-wrap{margin:24px 20px}
+  }
+</style>
 </head>
 <body>
-  <!-- Halaman awal -->
-  <div id="homePage" class="center">
-    <h1 style="font-size:48px; color:#4285F4;">Cari Data</h1>
-    <input type="text" id="searchBoxHome" class="search-box" placeholder="Masukkan kata kunci..." 
-           onkeydown="if(event.key==='Enter'){searchFromHome();}">
-    <br>
-    <button class="btn" onclick="searchFromHome()">Cari</button>
+
+<!-- ===================== HOME ===================== -->
+<section id="homePage" aria-label="Home">
+  <div class="logo-text" aria-label="TIM-AKADEMIK">
+    <span class="b">T</span><span class="r">I</span><span class="y">M</span><span class="g">-</span>
+    <span class="b">A</span><span class="r">K</span><span class="y">A</span><span class="g">D</span><span class="b">E</span><span class="r">M</span><span class="y">I</span><span class="g">K</span>
   </div>
 
-  <!-- Halaman hasil -->
-  <div id="resultsPage" style="display:none; padding:20px;">
-    <div style="text-align:center;">
-      <input type="text" id="searchBoxResults" class="search-box" 
-             onkeydown="if(event.key==='Enter'){searchFromResults();}">
-      <button class="btn" onclick="searchFromResults()">Cari</button>
+  <div class="home-search-wrap">
+    <div class="searchbar">
+      <!-- search icon -->
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27a6.471 6.471 0 001.48-5.34C15.24 5.59 12.42 3 9 3S2.76 5.59 2.09 8.39 3.58 13.5 6.38 14.17c1.9.45 3.88-.02 5.34-1.27l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zM9 13c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/></svg>
+      <input id="homeInput" type="text" placeholder="Cari dokumen… (Nama file / Deskripsi)" />
+      <!-- mic icon -->
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 0014 0h-2zM12 17a7 7 0 007-7h2a9 9 0 01-18 0h2a7 7 0 007 7z"/></svg>
     </div>
-    <div id="results" class="results"></div>
-    <div id="pagination" class="pagination"></div>
+    <div class="home-buttons">
+      <button onclick="submitFromHome()">TIM-AKADEMIK Search</button>
+      <button onclick="lucky()">Saya Lagi Beruntung</button>
+    </div>
   </div>
+</section>
+
+<!-- ===================== RESULTS ===================== -->
+<section id="resultsPage" aria-label="Hasil Pencarian">
+  <div class="hdr">
+    <div class="logo-small">
+      <span class="b">T</span><span class="r">I</span><span class="y">M</span><span class="g">-</span>
+      <span class="b">A</span><span class="r">K</span><span class="y">A</span><span class="g">D</span><span class="b">E</span><span class="r">M</span><span class="y">I</span><span class="g">K</span>
+    </div>
+    <div class="bar">
+      <div class="searchbar">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.471 6.471 0 001.48-5.34C15.24 5.59 12.42 3 9 3S2.76 5.59 2.09 8.39 3.58 13.5 6.38 14.17c1.9.45 3.88-.02 5.34-1.27l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zM9 13c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/></svg>
+        <input id="resultsInput" type="text" placeholder="Cari lagi…" />
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="active">Semua</div>
+    <div>Gambar</div>
+    <div>Berita</div>
+    <div>Video</div>
+    <div>Maps</div>
+    <div>Lainnya</div>
+  </div>
+
+  <div id="resWrap" class="res-wrap"></div>
+  <div id="paging" class="paging" aria-label="Navigasi halaman"></div>
+</section>
 
 <script>
-let classes = [];
-let currentPage = 1;
-const itemsPerPage = 10;
+/** ===== CONFIG ===== **/
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSTVuikIS8TrWotcD8HoURvr8THTt7wM5E3aoxbxHgL_Al6uILAbEK7rXiBfLdckO96gZVWuRGIUrY_/pub?gid=0&single=true&output=csv";
+const PER_PAGE = 10;
 
-// Ambil data dari Spreadsheet (CSV)
-fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTVuikIS8TrWotcD8HoURvr8THTt7wM5E3aoxbxHgL_Al6uILAbEK7rXiBfLdckO96gZVWuRGIUrY_/pub?gid=0&single=true&output=csv")
-  .then(res => res.text())
-  .then(text => {
-      const rows = text.split("\n").map(r => r.split(","));
-      // Kolom: Nama file | Link file | Deskripsi
-      classes = rows.slice(1).map(r => ({
-          name: r[0]?.trim(),
-          link: r[1]?.trim(),
-          desc: r[2]?.trim()
-      }));
+/** ===== STATE ===== **/
+let raw = [];       // baris mentah (objek dari header)
+let rows = [];      // baris yang sudah dinormalisasi (title, link, desc)
+let filtered = [];  // hasil filter
+let page = 1;
+
+/** ===== CSV PARSER aman (handle koma dalam quotes) ===== **/
+function parseCSV(text){
+  const lines = text.split(/\r?\n/).filter(l => l.trim().length>0);
+  if (!lines.length) return [];
+  const splitSafe = (s)=> s.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'').trim());
+  const headers = splitSafe(lines.shift()).map(h=>h.toLowerCase());
+  return lines.map(line=>{
+    const cols = splitSafe(line);
+    const obj={};
+    headers.forEach((h,i)=> obj[h] = (cols[i] ?? "").trim());
+    return obj;
+  });
+}
+
+/** ===== Normalisasi kolom sesuai sheet: Nama file | Link file | Deskripsi ===== **/
+function toDisplay(r){
+  const name = r["nama file"] || r["nama"] || r["title"] || r["judul"] || "";
+  const link = r["link file"] || r["url"] || r["link"] || "";
+  const desc = r["deskripsi"] || r["keterangan"] || "";
+  return { title: name || (link?link:"(Tanpa judul)"), link, desc };
+}
+
+/** ===== Highlight ===== **/
+function hi(text, q){
+  if (!text || !q) return text || "";
+  const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+  return text.replace(re, (m)=> `<mark class="hi">${m}</mark>`);
+}
+
+/** ===== Render Hasil ===== **/
+function render(){
+  const wrap = document.getElementById("resWrap");
+  const paging = document.getElementById("paging");
+  wrap.innerHTML = ""; paging.innerHTML = "";
+
+  if (!filtered.length){
+    wrap.innerHTML = `<div class="empty">Tidak ada hasil.</div>`;
+    return;
+  }
+
+  const q = (document.getElementById("resultsInput").value || "").trim();
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  if (page>totalPages) page=totalPages;
+
+  const start = (page-1)*PER_PAGE;
+  filtered.slice(start, start+PER_PAGE).forEach(item=>{
+    const url = item.link || "#";
+    const titleHTML = item.link
+      ? `<a href="${url}" target="_blank" rel="noopener noreferrer">${hi(item.title, q)}</a>`
+      : hi(item.title, q);
+
+    const div = document.createElement("div");
+    div.className = "res-item";
+    div.innerHTML = `
+      <div class="res-title">${titleHTML}</div>
+      ${item.link ? `<div class="res-url">${hi(url, q)}</div>` : ""}
+      <div class="res-desc">${hi(item.desc || "", q)}</div>
+    `;
+    wrap.appendChild(div);
   });
 
-// Fungsi pencarian
-function showResults(query, page = 1) {
-    document.getElementById('homePage').style.display = 'none';
-    document.getElementById('resultsPage').style.display = 'block';
-    document.getElementById('searchBoxResults').value = query;
-    currentPage = page;
+  // Pagination ala "Goooooooooogle"
+  const goo = document.createElement("div");
+  goo.className = "goo";
+  goo.innerHTML = `<span class="G">G</span>${
+    Array.from({length: Math.min(10, Math.ceil(filtered.length/PER_PAGE)+1)}).map((_,i)=>`<span class="${i%2? 'oo':'o'}">o</span>`).join('')
+  }<span class="g">g</span><span class="l">l</span><span class="e">e</span>`;
+  const links = document.createElement("div");
+  links.className = "page-links";
 
-    const results = classes.filter(c => c.name && c.name.toLowerCase().includes(query.toLowerCase()));
-    const container = document.getElementById('results');
-    container.innerHTML = '';
-
-    const start = (page - 1) * itemsPerPage;
-    const paginatedResults = results.slice(start, start + itemsPerPage);
-
-    paginatedResults.forEach(c => {
-        const div = document.createElement('div');
-        div.className = 'result-item';
-        if (c.link) {
-            div.innerHTML = `<a href="${c.link}" target="_blank">${c.name}</a><br>
-                             <span class="result-link">${c.link}</span><br>
-                             <span class="result-desc">${c.desc || ""}</span>`;
-        } else {
-            div.innerHTML = `<strong>${c.name}</strong><br>
-                             <span class="result-desc">${c.desc || ""}</span>`;
-        }
-        container.appendChild(div);
-    });
-
-    renderPagination(results.length, query);
+  for(let i=1;i<=totalPages;i++){
+    const a = document.createElement("a");
+    a.href = "#"; a.textContent = i;
+    if (i===page) a.classList.add("active");
+    a.addEventListener("click",(ev)=>{ev.preventDefault(); page=i; render();});
+    links.appendChild(a);
+  }
+  paging.appendChild(goo);
+  paging.appendChild(links);
 }
 
-// Pagination
-function renderPagination(total, query) {
-    const totalPages = Math.ceil(total / itemsPerPage);
-    const pagination = document.getElementById('pagination');
-    pagination.innerHTML = '';
-    for (let i=1; i<=totalPages; i++) {
-        const btn = document.createElement('button');
-        btn.textContent = i;
-        if (i===currentPage) btn.style.fontWeight = 'bold';
-        btn.onclick = () => showResults(query, i);
-        pagination.appendChild(btn);
-    }
+/** ===== Filter ===== **/
+function applyFilter(q){
+  const s = (q||"").toLowerCase().trim();
+  filtered = !s
+    ? rows.slice()
+    : rows.filter(it=>{
+        return (it.title||"").toLowerCase().includes(s) ||
+               (it.desc||"").toLowerCase().includes(s) ||
+               (it.link||"").toLowerCase().includes(s);
+      });
+  page = 1;
+  render();
 }
 
-// Fungsi helper
-function searchFromHome() {
-    const q = document.getElementById('searchBoxHome').value;
-    if (q.trim()!=="") showResults(q);
+/** ===== Nav ===== **/
+function showHome(){
+  document.getElementById("homePage").style.display="flex";
+  document.getElementById("resultsPage").style.display="none";
+  document.getElementById("homeInput").focus();
 }
-function searchFromResults() {
-    const q = document.getElementById('searchBoxResults').value;
-    if (q.trim()!=="") showResults(q);
+function showResults(q){
+  document.getElementById("homePage").style.display="none";
+  document.getElementById("resultsPage").style.display="block";
+  const ri = document.getElementById("resultsInput");
+  ri.value = q||"";
+  ri.focus();
+  applyFilter(q||"");
 }
+
+/** ===== Actions (buttons) ===== **/
+function submitFromHome(){
+  const q = document.getElementById("homeInput").value;
+  showResults(q);
+}
+function lucky(){
+  // “Saya Lagi Beruntung” → buka item pertama jika ada
+  if (rows.length && rows[0].link){
+    window.open(rows[0].link, "_blank");
+  } else {
+    submitFromHome();
+  }
+}
+
+/** ===== Events ===== **/
+document.getElementById("homeInput").addEventListener("keydown", e=>{
+  if (e.key==="Enter") submitFromHome();
+});
+document.getElementById("resultsInput").addEventListener("keydown", e=>{
+  if (e.key==="Enter") applyFilter(e.currentTarget.value);
+});
+document.getElementById("resultsInput").addEventListener("input", e=>{
+  // update realtime saat mengetik di halaman hasil
+  applyFilter(e.currentTarget.value);
+});
+
+/** ===== Init: load CSV, then go Home ===== **/
+(async function init(){
+  try{
+    const res = await fetch(CSV_URL, {cache:"no-store"});
+    const text = await res.text();
+    raw = parseCSV(text);
+    rows = raw.map(toDisplay);
+  }catch(err){
+    console.error("Gagal memuat CSV:", err);
+    rows = [];
+  }
+  showHome();
+})();
 </script>
 </body>
 </html>
