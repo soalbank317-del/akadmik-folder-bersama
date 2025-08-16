@@ -98,7 +98,8 @@
 
     // Ambil data dari Apps Script
     google.script.run.withSuccessHandler(data => {
-      classes = data;
+      classes = data || [];
+      console.log("✅ Data dari Spreadsheet:", classes);
     }).getData();
 
     function checkEnter(e) {
@@ -119,12 +120,22 @@
       document.getElementById('searchBoxResults').value = query;
       currentPage = page;
 
+      console.log("🔎 Query pencarian:", query);
+
       const results = classes.filter(c => 
-        c.name.toLowerCase().includes(query.toLowerCase())
+        (c.name || "").toLowerCase().includes(query.toLowerCase())
       );
+
+      console.log("📊 Hasil filter:", results);
 
       const container = document.getElementById('results');
       container.innerHTML = '';
+
+      if (results.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#777;">Tidak ada hasil ditemukan.</p>';
+        document.getElementById('pagination').innerHTML = '';
+        return;
+      }
 
       const start = (page - 1) * itemsPerPage;
       const paginatedResults = results.slice(start, start + itemsPerPage);
@@ -134,7 +145,7 @@
         div.className = 'result-item';
         div.innerHTML = `
           <a href="${c.link}" target="_blank">${c.name}</a><br>
-          <span class="result-link">${c.name}</span><br>
+          <span class="result-link">${c.link}</span><br>
           <span class="result-desc">${c.desc}</span>
         `;
         container.appendChild(div);
