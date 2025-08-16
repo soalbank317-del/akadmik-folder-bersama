@@ -1,99 +1,165 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pencarian File</title>
-<style>
-    body { font-family: Arial, sans-serif; background-color: #fff; color: #202124; margin: 0; }
-    .logo-container { text-align: center; margin-top: 150px; }
-    .logo-container img { width: 272px; height: 92px; }
-    .search-box { display: block; margin: 20px auto; width: 50%; max-width: 600px; padding: 12px 20px; font-size: 16px; border: 1px solid #dcdcdc; border-radius: 24px; outline: none; }
-    .results-container { max-width: 800px; margin: 20px auto; }
-    .result-item { margin-bottom: 20px; }
-    .result-item a { font-size: 18px; color: #1a0dab; text-decoration: none; }
-    .result-link { font-size: 14px; color: #006621; }
-    .result-desc { font-size: 14px; color: #545454; }
-    .pagination { text-align: center; margin: 30px 0; }
-    .pagination a { margin: 0 5px; text-decoration: none; color: #1a0dab; }
-    .pagination a.active { font-weight: bold; color: black; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pencarian File</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fff;
+      color: #202124;
+      margin: 0;
+    }
+    .logo-container {
+      text-align: center;
+      margin-top: 150px;
+    }
+    .logo-container img {
+      width: 272px;
+      height: 92px;
+    }
+    .search-box {
+      display: block;
+      margin: 20px auto;
+      width: 50%;
+      max-width: 600px;
+      padding: 12px 20px;
+      font-size: 16px;
+      border: 1px solid #dcdcdc;
+      border-radius: 24px;
+      outline: none;
+    }
+    .results-container {
+      max-width: 800px;
+      margin: 20px auto;
+    }
+    .result-item {
+      margin-bottom: 20px;
+    }
+    .result-item a {
+      font-size: 18px;
+      color: #1a0dab;
+      text-decoration: none;
+    }
+    .result-link {
+      font-size: 14px;
+      color: #006621;
+    }
+    .result-desc {
+      font-size: 14px;
+      color: #545454;
+    }
+    .pagination {
+      text-align: center;
+      margin: 30px 0;
+    }
+    .pagination a {
+      margin: 0 5px;
+      text-decoration: none;
+      color: #1a0dab;
+    }
+    .pagination a.active {
+      font-weight: bold;
+      color: black;
+    }
+  </style>
 </head>
 <body>
 
-<!-- Halaman Awal -->
-<div id="homePage" class="logo-container">
+  <!-- Halaman Awal -->
+  <div id="homePage" class="logo-container">
     <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" alt="Google Logo">
-    <input type="text" id="searchBox" class="search-box" placeholder="Cari file..." onkeydown="checkEnter(event)">
-</div>
+    <input 
+      type="text" 
+      id="searchBox" 
+      class="search-box" 
+      placeholder="Cari file..." 
+      onkeydown="checkEnter(event)"
+    >
+  </div>
 
-<!-- Halaman Hasil -->
-<div id="resultsPage" style="display:none;">
-    <input type="text" id="searchBoxResults" class="search-box" onkeydown="checkEnterResults(event)">
+  <!-- Halaman Hasil -->
+  <div id="resultsPage" style="display:none;">
+    <input 
+      type="text" 
+      id="searchBoxResults" 
+      class="search-box" 
+      onkeydown="checkEnterResults(event)"
+    >
     <div class="results-container" id="results"></div>
     <div class="pagination" id="pagination"></div>
-</div>
+  </div>
 
-<script>
-let classes = [];
-let currentPage = 1;
-const itemsPerPage = 10;
+  <script>
+    let classes = [];
+    let currentPage = 1;
+    const itemsPerPage = 10;
 
-// Ambil data dari Apps Script
-google.script.run.withSuccessHandler(data => {
-    classes = data;
-}).getData();
+    // Ambil data dari Apps Script
+    google.script.run.withSuccessHandler(data => {
+      classes = data;
+    }).getData();
 
-function checkEnter(e) {
-    if (e.key === 'Enter') showResults(document.getElementById('searchBox').value);
-}
+    function checkEnter(e) {
+      if (e.key === 'Enter') {
+        showResults(document.getElementById('searchBox').value);
+      }
+    }
 
-function checkEnterResults(e) {
-    if (e.key === 'Enter') showResults(document.getElementById('searchBoxResults').value);
-}
+    function checkEnterResults(e) {
+      if (e.key === 'Enter') {
+        showResults(document.getElementById('searchBoxResults').value);
+      }
+    }
 
-function showResults(query, page = 1) {
-    document.getElementById('homePage').style.display = 'none';
-    document.getElementById('resultsPage').style.display = 'block';
-    document.getElementById('searchBoxResults').value = query;
-    currentPage = page;
+    function showResults(query, page = 1) {
+      document.getElementById('homePage').style.display = 'none';
+      document.getElementById('resultsPage').style.display = 'block';
+      document.getElementById('searchBoxResults').value = query;
+      currentPage = page;
 
-    const results = classes.filter(c => c.name.toLowerCase().includes(query.toLowerCase()));
-    const container = document.getElementById('results');
-    container.innerHTML = '';
+      const results = classes.filter(c => 
+        c.name.toLowerCase().includes(query.toLowerCase())
+      );
 
-    const start = (page - 1) * itemsPerPage;
-    const paginatedResults = results.slice(start, start + itemsPerPage);
+      const container = document.getElementById('results');
+      container.innerHTML = '';
 
-    paginatedResults.forEach(c => {
+      const start = (page - 1) * itemsPerPage;
+      const paginatedResults = results.slice(start, start + itemsPerPage);
+
+      paginatedResults.forEach(c => {
         const div = document.createElement('div');
         div.className = 'result-item';
-        div.innerHTML = `<a href="${c.link}" target="_blank">${c.name}</a><br>
-                         <span class="result-link">${c.name}</span><br>
-                         <span class="result-desc">${c.desc}</span>`;
+        div.innerHTML = `
+          <a href="${c.link}" target="_blank">${c.name}</a><br>
+          <span class="result-link">${c.name}</span><br>
+          <span class="result-desc">${c.desc}</span>
+        `;
         container.appendChild(div);
-    });
+      });
 
-    renderPagination(results.length, query);
-}
+      renderPagination(results.length, query);
+    }
 
-function renderPagination(totalItems, query) {
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-    const pagination = document.getElementById('pagination');
-    pagination.innerHTML = '';
+    function renderPagination(totalItems, query) {
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+      const pagination = document.getElementById('pagination');
+      pagination.innerHTML = '';
 
-    for (let i = 1; i <= totalPages; i++) {
+      for (let i = 1; i <= totalPages; i++) {
         const a = document.createElement('a');
         a.href = "#";
         a.textContent = i;
         if (i === currentPage) {
-            a.classList.add('active');
+          a.classList.add('active');
         }
         a.addEventListener('click', () => showResults(query, i));
         pagination.appendChild(a);
+      }
     }
-}
-</script>
+  </script>
 
 </body>
 </html>
